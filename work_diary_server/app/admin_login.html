@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 · 极简工作日记管理后台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: #f5f7fb; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card {
+      width: 360px; background: #fff; border-radius: 14px;
+      box-shadow: 0 8px 30px rgba(30, 60, 120, .10);
+      padding: 36px 32px;
+    }
+    .logo {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: #3B82F6; color: #fff; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 700; margin: 0 auto 16px;
+    }
+    h1 { font-size: 18px; text-align: center; color: #1f2937; margin-bottom: 4px; }
+    p.sub { font-size: 12px; color: #9ca3af; text-align: center; margin-bottom: 28px; }
+    label { font-size: 13px; color: #4b5563; display: block; margin-bottom: 6px; }
+    input {
+      width: 100%; height: 42px; border: 1px solid #e5e7eb; border-radius: 8px;
+      padding: 0 12px; font-size: 14px; margin-bottom: 16px; outline: none;
+    }
+    input:focus { border-color: #3B82F6; }
+    button {
+      width: 100%; height: 42px; border: none; border-radius: 8px;
+      background: #3B82F6; color: #fff; font-size: 14px; cursor: pointer;
+    }
+    button:hover { background: #2563eb; }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .error { color: #dc2626; font-size: 13px; text-align: center; margin-bottom: 12px; min-height: 18px; }
+    .foot { margin-top: 20px; font-size: 12px; color: #9ca3af; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">记</div>
+    <h1>极简工作日记 · 管理后台</h1>
+    <p class="sub">请使用管理员账号登录</p>
+    <div class="error" id="err"></div>
+    <form id="form">
+      <label for="username">管理员账号</label>
+      <input id="username" name="username" autocomplete="username" required>
+      <label for="password">密码</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button id="btn" type="submit">登 录</button>
+    </form>
+    <div class="foot">账号密码在服务端 .env 的 ADMIN_USERNAME / ADMIN_PASSWORD 中配置</div>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const err = document.getElementById('err');
+    const btn = document.getElementById('btn');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.textContent = '';
+      btn.disabled = true;
+      try {
+        const fd = new FormData(form);
+        const resp = await fetch('/admin/login', { method: 'POST', body: fd });
+        if (resp.redirected || resp.ok) {
+          window.location.href = '/admin';
+          return;
+        }
+        let msg = '登录失败';
+        try { const data = await resp.json(); if (data.detail) msg = data.detail; } catch (_) {}
+        err.textContent = msg;
+      } catch (_) {
+        err.textContent = '网络错误，请重试';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

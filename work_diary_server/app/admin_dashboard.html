@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 · 极简工作日记</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: #f5f7fb; color: #1f2937; min-height: 100vh;
+    }
+    header {
+      background: #fff; border-bottom: 1px solid #eef0f4;
+      padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    header .brand { display: flex; align-items: center; gap: 12px; }
+    header .logo {
+      width: 34px; height: 34px; border-radius: 9px; background: #3B82F6;
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700;
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .actions { display: flex; gap: 10px; }
+    header button {
+      height: 34px; padding: 0 14px; border-radius: 8px; border: 1px solid #e5e7eb;
+      background: #fff; color: #4b5563; font-size: 13px; cursor: pointer;
+    }
+    header button.primary { background: #3B82F6; border-color: #3B82F6; color: #fff; }
+    header button:hover { opacity: .85; }
+
+    main { max-width: 1080px; margin: 24px auto; padding: 0 20px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+    .card {
+      background: #fff; border-radius: 12px; padding: 18px 20px;
+      box-shadow: 0 1px 4px rgba(30, 60, 120, .06);
+    }
+    .card .num { font-size: 30px; font-weight: 700; color: #111827; line-height: 1.2; }
+    .card .num.blue { color: #3B82F6; }
+    .card .lbl { font-size: 13px; color: #6b7280; margin-top: 6px; }
+
+    .panel {
+      background: #fff; border-radius: 12px; margin-top: 16px; padding: 20px 22px;
+      box-shadow: 0 1px 4px rgba(30, 60, 120, .06);
+    }
+    .panel h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+    .chart-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #f1f3f7; }
+    th { color: #6b7280; font-weight: 500; font-size: 12px; }
+    tr:last-child td { border-bottom: none; }
+    .empty { color: #9ca3af; text-align: center; padding: 24px 0; font-size: 13px; }
+    .meta { font-size: 12px; color: #9ca3af; margin-top: 10px; }
+    .toast-error {
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      background: #fee2e2; color: #b91c1c; font-size: 13px; padding: 8px 16px;
+      border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.08); display: none;
+    }
+    .toast-ok {
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      background: #dcfce7; color: #166534; font-size: 13px; padding: 8px 16px;
+      border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.08); display: none;
+    }
+    /* 版本管理 */
+    .ver-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .ver-form .full { grid-column: 1 / -1; }
+    .ver-form label { display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+    .ver-form input[type="text"], .ver-form textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px;
+      font-size: 13px; font-family: inherit;
+    }
+    .ver-form textarea { min-height: 70px; resize: vertical; }
+    .ver-form input[type="file"] { font-size: 12px; }
+    .ver-form .checkbox-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #4b5563; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+    .badge.active { background: #dcfce7; color: #166534; }
+    .badge.inactive { background: #f3f4f6; color: #6b7280; }
+    .badge.force { background: #fee2e2; color: #b91c1c; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; color: #4b5563; }
+    .btn-sm.primary { background: #3B82F6; border-color: #3B82F6; color: #fff; }
+    .btn-sm.danger { color: #dc2626; border-color: #fecaca; }
+    .btn-sm:hover { opacity: .85; }
+    .btn-sm:disabled { opacity: .4; cursor: not-allowed; }
+    /* 版本管理 Tab 版 */
+    .tabs{display:flex;gap:2px;border-bottom:1px solid #E5E7EB;margin-bottom:18px;}
+    .tab{background:none;border:none;padding:9px 18px;font-size:13.5px;font-weight:500;color:#6B7280;cursor:pointer;border-radius:8px 8px 0 0;position:relative;font-family:inherit;}
+    .tab.on{color:#1D4ED8;font-weight:600;}
+    .tab.on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:#3B82F6;border-radius:2px;}
+    .tab .cnt{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:#EFF3FB;color:#4B5563;font-size:11px;font-weight:600;}
+    .tab.on .cnt{background:#DBE7FE;color:#1D4ED8;}
+    .tabpane{min-height:220px;}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;}
+    .toolbar .hint{font-size:12px;color:#9CA3AF;}
+    .add-btn{display:inline-flex;align-items:center;gap:6px;background:#3B82F6;color:#fff;border:none;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;}
+    .add-btn svg{width:14px;height:14px;}
+    .add-btn:hover{opacity:.9;}
+    .finput{width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;background:#fff;font-family:inherit;}
+    .modal-mask{position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:60px 20px;overflow-y:auto;}
+    .modal{background:#fff;border-radius:14px;width:540px;max-width:100%;box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden;}
+    .modal .m-head{display:flex;align-items:center;justify-content:space-between;padding:15px 22px;border-bottom:1px solid #E5E7EB;}
+    .modal .m-head h3{font-size:15px;font-weight:700;}
+    .modal .m-x{width:26px;height:26px;border-radius:7px;border:none;background:#F3F4F6;color:#6B7280;font-size:13px;cursor:pointer;}
+    .modal .m-body{padding:18px 22px;display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+    .modal .m-body .full{grid-column:1/-1;}
+    .modal label{display:block;font-size:12px;color:#6B7280;margin-bottom:5px;}
+    .modal input[type=text],.modal textarea{width:100%;padding:8px 11px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;}
+    .modal textarea{min-height:72px;resize:vertical;}
+    .modal .chk{display:flex;align-items:center;gap:7px;font-size:13px;color:#4B5563;}
+    .modal .m-foot{display:flex;justify-content:flex-end;gap:10px;padding:13px 22px;border-top:1px solid #F3F4F6;background:#FAFBFC;}
+    .qr-card{display:flex;gap:22px;align-items:center;border:1px solid #E5E7EB;border-radius:12px;padding:20px;}
+    .qr-grid{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px;}
+    .qr-grid .qr-card{flex:1 1 340px;min-width:0;}
+    .qr-time{font-size:12px;color:#9CA3AF;margin-bottom:10px;}
+    .up-progress{margin:2px 22px 0;padding-bottom:14px;}
+    .up-bar{height:8px;background:#EFF3FB;border-radius:6px;overflow:hidden;}
+    .up-fill{height:100%;width:0%;background:#3B82F6;border-radius:6px;transition:width .15s ease;}
+    .up-fill.done{background:#22C55E;}
+    .up-text{font-size:12px;color:#6B7280;margin-top:6px;}
+    .qr-ph{width:132px;height:132px;border-radius:10px;background:#F8FAFC;border:1px dashed #CBD5E1;display:flex;align-items:center;justify-content:center;color:#9CA3AF;font-size:12px;flex:none;text-align:center;}
+    .qr-info .qr-t{font-size:14px;font-weight:600;margin-bottom:6px;}
+    .qr-info .qr-s{font-size:12.5px;color:#6B7280;margin-bottom:12px;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">记</div>
+      <h1>极简工作日记 · 管理后台</h1>
+    </div>
+    <div class="actions">
+      <button onclick="loadStats()">刷新</button>
+      <form method="post" action="/admin/logout" style="margin:0">
+        <button class="primary" type="submit">退出登录</button>
+      </form>
+    </div>
+  </header>
+  <div class="toast-error" id="toast"></div>
+  <div id="bootbar" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#1D4ED8;color:#fff;font-size:12px;padding:4px 12px;display:none;font-family:system-ui,sans-serif">脚本加载中...</div>
+  <div class="toast-ok" id="toast-ok"></div>
+
+  <main>
+    <div class="cards" id="cards">
+      <div class="card"><div class="num blue" id="c-total">-</div><div class="lbl">注册总人数</div></div>
+      <div class="card"><div class="num" id="c-today">-</div><div class="lbl">今日新增</div></div>
+      <div class="card"><div class="num" id="c-yest">-</div><div class="lbl">昨日新增</div></div>
+      <div class="card"><div class="num" id="c-tasks">-</div><div class="lbl">云端任务总数</div></div>
+      <div class="card"><div class="num" id="c-active">-</div><div class="lbl">活跃用户</div></div>
+      <div class="card"><div class="num" id="c-avg">-</div><div class="lbl">人均任务</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>最近 14 天注册趋势</h2>
+      <div class="chart-wrap" id="chart"></div>
+    </div>
+
+    <div class="panel">
+      <h2>最近注册用户</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>邮箱</th><th>注册时间</th><th>最近登录</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="meta" id="meta"></div>
+    </div>
+
+    <div class="panel" id="version-panel">
+      <div class="tabs">
+        <button type="button" class="tab on" data-tab="win" onclick="switchTab('win')">Windows 版<span class="cnt" id="tabWinCnt">0</span></button>
+        <button type="button" class="tab" data-tab="mp" onclick="switchTab('mp')">小程序版<span class="cnt" id="tabMpCnt">0</span></button>
+        <button type="button" class="tab" data-tab="site" onclick="switchTab('site')">官网设置</button>
+      </div>
+
+      <div class="tabpane" id="pane-win">
+        <div class="toolbar">
+          <div class="hint">ZIP 与 EXE 至少上传一个；同版本重复上传会替换文件、保留生效状态。</div>
+          <button type="button" class="add-btn" onclick="openModal('win')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            新建版本
+          </button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>版本号</th><th>ZIP 大小</th><th>EXE 大小</th><th>强制升级</th><th>状态</th><th>上传时间</th><th>说明</th><th>操作</th></tr>
+          </thead>
+          <tbody id="ver-rows"></tbody>
+        </table>
+      </div>
+
+      <div class="tabpane" id="pane-mp" style="display:none">
+        <div class="toolbar">
+          <div class="hint">小程序无安装包，仅登记版本号与更新说明；「设为当前」后官网日志与数据带立即联动。</div>
+          <button type="button" class="add-btn" onclick="openModal('mp')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            新建版本
+          </button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>版本号</th><th>状态</th><th>发布时间</th><th>说明</th><th>操作</th></tr>
+          </thead>
+          <tbody id="mp-rows"></tbody>
+        </table>
+      </div>
+
+      <div class="tabpane" id="pane-site" style="display:none">
+        <div class="qr-grid">
+          <div class="qr-card">
+            <div class="qr-ph" id="qr-ph">二维码预览</div>
+            <div class="qr-info">
+              <div class="qr-t">入群二维码</div>
+              <div class="qr-s">上传后官网「加入内测群」区块自动展示。支持 png / jpg / webp，≤5MB。</div>
+              <div id="qr-time" class="qr-time">尚未设置</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button type="button" class="btn-sm primary" id="qr-upload-btn" onclick="document.getElementById('qr-file').click()">上传二维码</button>
+                <button type="button" class="btn-sm danger" onclick="clearQrcode()">清除二维码</button>
+                <input type="file" id="qr-file" accept=".png,.jpg,.jpeg,.webp" style="display:none" onchange="uploadQrcode(this.files[0])">
+              </div>
+            </div>
+          </div>
+          <div class="qr-card">
+            <div class="qr-ph" id="aqr-ph">二维码预览</div>
+            <div class="qr-info">
+              <div class="qr-t">作者微信二维码</div>
+              <div class="qr-s">上传后官网最底部「扫码添加作者好友」区块自动展示。支持 png / jpg / webp，≤5MB。</div>
+              <div id="aqr-time" class="qr-time">尚未设置</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button type="button" class="btn-sm primary" id="aqr-upload-btn" onclick="document.getElementById('aqr-file').click()">上传二维码</button>
+                <button type="button" class="btn-sm danger" onclick="clearAuthorQrcode()">清除二维码</button>
+                <input type="file" id="aqr-file" accept=".png,.jpg,.jpeg,.webp" style="display:none" onchange="uploadAuthorQrcode(this.files[0])">
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+                <input type="text" id="author-account-input" placeholder="微信号，如 php100" style="flex:1;min-width:0;padding:7px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px">
+                <button type="button" class="btn-sm" id="author-account-btn" onclick="saveAuthorAccount()">保存账号</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 新建版本弹窗 -->
+  <div class="modal-mask" id="verModal" style="display:none">
+    <div class="modal">
+      <div class="m-head">
+        <h3 id="modalTitle">新建 Windows 版本</h3>
+        <button type="button" class="m-x" onclick="closeModal()">✕</button>
+      </div>
+      <form id="modal-form" onsubmit="return submitModal(event)">
+        <div class="m-body">
+          <div class="full"><label>版本号（x.y.z）</label><input type="text" id="m-version" required placeholder="如 1.1.0"></div>
+          <div id="m-files-win">
+            <div class="full"><label>ZIP 免安装包（.zip，可选）</label><input type="file" id="m-zip" accept=".zip" class="finput"></div>
+            <div class="full"><label>EXE 安装包（.exe，可选）</label><input type="file" id="m-exe" accept=".exe" class="finput"></div>
+          </div>
+          <div class="full"><label>更新说明</label><textarea id="m-notes" placeholder="1. 新增xxx功能&#10;2. 修复xxx问题"></textarea></div>
+          <div class="full chk" id="m-force-row"><input type="checkbox" id="m-force"><label for="m-force" style="margin:0">强制升级（用户必须升级才能继续使用）</label></div>
+        </div>
+        <div class="up-progress" id="up-progress" style="display:none">
+          <div class="up-bar"><div class="up-fill" id="up-fill"></div></div>
+          <div class="up-text" id="up-text">准备上传...</div>
+        </div>
+        <div class="m-foot">
+          <button type="button" class="btn-sm" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn-sm primary" id="m-submit">上传新版本</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 更新说明详情弹窗 -->
+  <!-- 通用提示弹窗（版本号校验提醒等） -->
+  <div class="modal-mask" id="alertModal" style="display:none">
+    <div class="modal" style="width:420px">
+      <div class="m-head">
+        <h3 id="alertTitle">提示</h3>
+        <button type="button" class="m-x" onclick="closeAlert()">✕</button>
+      </div>
+      <div class="m-body" style="display:block">
+        <div id="alertMsg" style="font-size:13.5px;color:#374151;line-height:1.7"></div>
+      </div>
+      <div class="m-foot">
+        <button type="button" class="btn-sm primary" onclick="closeAlert()">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="notesModal" style="display:none">
+    <div class="modal">
+      <div class="m-head">
+        <h3 id="notesTitle">更新说明</h3>
+        <button type="button" class="m-x" onclick="closeNotes()">✕</button>
+      </div>
+      <div class="m-body" style="display:block">
+        <div id="notesMeta" style="font-size:12.5px;color:#6b7280;margin-bottom:12px"></div>
+        <div id="notesBody" style="font-size:13.5px;color:#374151;white-space:pre-wrap;line-height:1.7;min-height:80px"></div>
+      </div>
+      <div class="m-foot">
+        <button type="button" class="btn-sm" onclick="closeNotes()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let stats = null;
+    (function () {
+      var bar = document.getElementById('bootbar');
+      if (bar) { bar.style.display = 'block'; }
+      console.log('[工作日记后台] 脚本已加载 v1.0.5（进度条版），' + new Date().toLocaleTimeString());
+      try {
+        if (bar) {
+          if (location.protocol === 'file:') {
+            bar.style.background = '#D97706';
+            bar.textContent = '本地预览模式（file://）：上传与管理功能不可用，请打开在线后台 https://work.jspang.com/admin';
+          } else {
+            bar.style.background = '#16A34A';
+            setTimeout(function(){ bar.style.display = 'none'; }, 3000);
+          }
+        }
+      } catch (e) {}
+    })();
+    window.addEventListener('error', function (ev) {
+      try { showToast('页面脚本错误：' + (ev.message || '未知错误')); } catch (e) {}
+    });
+    window.addEventListener('unhandledrejection', function (ev) {
+      try {
+        const msg = ev.reason && ev.reason.message ? ev.reason.message : '未知错误';
+        showToast('请求失败：' + msg);
+      } catch (e) {}
+    });
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    function renderChart(trend) {
+      const wrap = document.getElementById('chart');
+      const W = 980, H = 220, padL = 30, padB = 26, padT = 12;
+      const max = Math.max(1, ...trend.map(d => d.count));
+      const n = trend.length;
+      const bw = (W - padL - 8) / n;
+      let bars = '';
+      trend.forEach((d, i) => {
+        const h = Math.round((d.count / max) * (H - padB - padT));
+        const x = padL + i * bw + bw * 0.18;
+        const y = H - padB - h;
+        const label = d.date.slice(5); // MM-DD
+        bars += `
+          <rect x="${x.toFixed(1)}" y="${y}" width="${(bw * 0.64).toFixed(1)}" height="${h || 1}" rx="3"
+                fill="${d.count > 0 ? '#3B82F6' : '#e5e7eb'}">
+            <title>${d.date}：${d.count} 人</title>
+          </rect>
+          <text x="${(x + bw * 0.32).toFixed(1)}" y="${H - 8}" font-size="10" fill="#9ca3af" text-anchor="middle">${label}</text>
+          ${d.count > 0 ? `<text x="${(x + bw * 0.32).toFixed(1)}" y="${y - 4}" font-size="10" fill="#6b7280" text-anchor="middle">${d.count}</text>` : ''}
+        `;
+      });
+      wrap.innerHTML = `
+        <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="min-width:${W}px">
+          <line x1="${padL}" y1="${H - padB}" x2="${W - 4}" y2="${H - padB}" stroke="#eef0f4"/>
+          ${bars}
+        </svg>`;
+    }
+
+    function renderRows(recent) {
+      const tbody = document.getElementById('rows');
+      if (!recent.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty">暂无注册用户</td></tr>';
+        return;
+      }
+      tbody.innerHTML = recent.map(u => `
+        <tr>
+          <td>${u.id}</td>
+          <td>${escapeHtml(u.email)}</td>
+          <td>${u.created_at}</td>
+          <td>${u.last_login_at}</td>
+        </tr>`).join('');
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    async function loadStats() {
+      try {
+        const resp = await fetch('/admin/api/stats', { headers: { 'Accept': 'application/json' } });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        stats = await resp.json();
+        document.getElementById('c-total').textContent = stats.total_users;
+        document.getElementById('c-today').textContent = stats.today_users;
+        document.getElementById('c-yest').textContent = stats.yesterday_users;
+        document.getElementById('c-tasks').textContent = stats.total_tasks;
+        document.getElementById('c-active').textContent = stats.active_users;
+        document.getElementById('c-avg').textContent = stats.avg_tasks_per_active;
+        document.getElementById('meta').textContent = '统计口径：中国时区，数据更新于 ' + stats.generated_at + '（UTC+8）';
+        renderChart(stats.trend);
+        renderRows(stats.recent_users);
+      } catch (e) {
+        showToast('加载统计数据失败：' + e.message);
+      }
+    }
+
+    loadStats();
+    setInterval(loadStats, 60000); // 每分钟自动刷新
+
+    // ========== 版本管理 ==========
+    function showToastOk(msg) {
+      const t = document.getElementById('toast-ok');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2500);
+    }
+
+    async function loadVersions() {
+      try {
+        const resp = await fetch('/admin/api/versions', { headers: { 'Accept': 'application/json' } });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        const tbody = document.getElementById('ver-rows');
+        if (!data.versions.length) {
+          tbody.innerHTML = '<tr><td colspan="8" class="empty">暂无版本，上传第一个升级包吧</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.versions.map(v => `
+          <tr>
+            <td><strong>v${escapeHtml(v.version)}</strong></td>
+            <td>${v.zip_size_mb ? v.zip_size_mb + ' MB' : '-'}</td>
+            <td>${v.exe_size_mb ? v.exe_size_mb + ' MB' : '-'}</td>
+            <td>${v.force_update ? '<span class="badge force">强制</span>' : '<span class="badge inactive">否</span>'}</td>
+            <td>${v.is_active ? '<span class="badge active">当前生效</span>' : '<span class="badge inactive">未生效</span>'}</td>
+            <td>${v.created_at}</td>
+            <td><button type="button" class="btn-sm" data-notes="${escapeHtml(v.release_notes)}" onclick="showNotes('Windows 版', 'v${escapeHtml(v.version)}', '${v.created_at}', this.getAttribute('data-notes'))">详情</button></td>
+            <td>
+              ${v.is_active
+                ? '<button class="btn-sm" disabled>当前版本</button>'
+                : `<button class="btn-sm primary" onclick="activateVersion(${v.id})">设为当前</button>`}
+              <button class="btn-sm danger" onclick="deleteVersion(${v.id})">删除</button>
+            </td>
+          </tr>`).join('');
+        document.getElementById('tabWinCnt').textContent = data.versions.length;
+      } catch (e) {
+        showToast('加载版本列表失败：' + e.message);
+      }
+    }
+
+    let modalPlatform = 'win';
+
+    function switchTab(name) {
+      document.querySelectorAll('#version-panel .tab').forEach(function(t){
+        t.classList.toggle('on', t.dataset.tab === name);
+      });
+      document.querySelectorAll('#version-panel .tabpane').forEach(function(p){
+        p.style.display = (p.id === 'pane-' + name) ? '' : 'none';
+      });
+      if (name === 'site') { loadQrcode(); loadAuthorQrcode(); }
+    }
+
+    function openModal(platform) {
+      modalPlatform = platform;
+      const isWin = platform === 'win';
+      const isMp = platform === 'mp';
+      document.getElementById('modalTitle').textContent = isWin ? '新建 Windows 版本' : '新建微信小程序版本';
+      document.getElementById('m-files-win').style.display = isWin ? '' : 'none';
+      document.getElementById('m-force-row').style.display = isMp ? 'none' : '';
+      document.getElementById('m-submit').textContent = isMp ? '保存新版本' : '上传新版本';
+      document.getElementById('m-version').value = '';
+      document.getElementById('m-notes').value = '';
+      document.getElementById('m-force').checked = false;
+      ['m-zip', 'm-exe'].forEach(function(id){ document.getElementById(id).value = ''; });
+      document.getElementById('verModal').style.display = 'flex';
+      document.getElementById('m-version').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('verModal').style.display = 'none';
+    }
+
+    function submitModal(e) {
+      e.preventDefault();
+      try {
+        return doSubmitModal();
+      } catch (err) {
+        showToast('提交出错：' + (err && err.message ? err.message : err));
+        return false;
+      }
+    }
+
+    function doSubmitModal() {
+      const verInput = document.getElementById('m-version');
+      const raw = verInput.value.trim();
+      const vm = /^[vV]?(\d+\.\d+\.\d+)$/.exec(raw);
+      if (!vm) {
+        showAlertModal('版本号格式不正确', '请填写 x.y.z 格式的版本号，例如 1.0.4，不要加 v 前缀。');
+        verInput.focus();
+        return false;
+      }
+      if (/^[vV]/.test(raw)) {
+        verInput.value = vm[1];
+        showAlertModal('已自动修正版本号', '检测到 v 前缀，已自动去除。本次将上传版本 ' + vm[1] + '，请再次点击「上传新版本」。');
+        verInput.focus();
+        return false;
+      }
+      const version = vm[1];
+      const notes = document.getElementById('m-notes').value.trim();
+      if (modalPlatform === 'mp') {
+        return uploadMpVersion(version, notes);
+      }
+      const force = document.getElementById('m-force').checked ? 1 : 0;
+      const z = document.getElementById('m-zip').files[0];
+      const ex = document.getElementById('m-exe').files[0];
+      if (z && !z.name.toLowerCase().endsWith('.zip')) {
+        showToast('ZIP 栏只能选择 .zip 文件，请检查是否选错栏位');
+        return false;
+      }
+      if (ex && !ex.name.toLowerCase().endsWith('.exe')) {
+        showToast('EXE 栏只能选择 .exe 文件，请检查是否选错栏位');
+        return false;
+      }
+      return uploadVersion(version, notes, force, z, ex);
+    }
+
+    function setProgress(pct, text, done) {
+      const wrap = document.getElementById('up-progress');
+      const fill = document.getElementById('up-fill');
+      const txt = document.getElementById('up-text');
+      if (!wrap || !fill || !txt) return;
+      wrap.style.display = 'block';
+      fill.style.width = pct + '%';
+      fill.classList.toggle('done', !!done);
+      txt.textContent = text;
+    }
+
+    function hideProgress() {
+      const wrap = document.getElementById('up-progress');
+      const fill = document.getElementById('up-fill');
+      const txt = document.getElementById('up-text');
+      if (wrap) wrap.style.display = 'none';
+      if (fill) fill.style.width = '0%';
+      if (txt) txt.textContent = '准备上传...';
+    }
+
+    // 带进度的上传：用 XHR（fetch 拿不到上传进度）
+    function uploadWithProgress(url, formData, onDone) {
+      const xhr = new XMLHttpRequest();
+      let settled = false;
+      function finish(err, data) {
+        if (settled) return;
+        settled = true;
+        if (xhr._idle) { clearTimeout(xhr._idle); }
+        onDone(err, data);
+      }
+      function idleFail() {
+        if (location.protocol === 'file:') {
+          finish(new Error('本地预览模式（file://）无法上传，请打开在线后台 https://work.jspang.com/admin'));
+        } else {
+          finish(new Error('上传无响应，请检查网络'));
+        }
+      }
+      try {
+        xhr.open('POST', url);
+      } catch (err) {
+        finish(new Error('请求无法发出：' + err.message));
+        return;
+      }
+      xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+          const pct = Math.round(e.loaded / e.total * 100);
+          setProgress(pct, '上传中 ' + pct + '%');
+          if (xhr._idle) { clearTimeout(xhr._idle); xhr._idle = setTimeout(idleFail, 30000); }
+        }
+      };
+      xhr.onload = function () {
+        if (xhr.status === 401) { window.location.href = '/admin/login'; return; }
+        let data = null;
+        try { data = JSON.parse(xhr.responseText); } catch (err) {}
+        if (xhr.status >= 200 && xhr.status < 300) {
+          finish(null, data);
+        } else {
+          finish(new Error((data && data.detail) || ('HTTP ' + xhr.status)));
+        }
+      };
+      xhr.onerror = function () { finish(new Error('网络错误，上传中断')); };
+      xhr.ontimeout = function () { finish(new Error('上传超时')); };
+      xhr.timeout = 600000; // 10 分钟
+      xhr._idle = setTimeout(idleFail, 8000); // 8 秒无任何事件（含 file:// 静默失败）
+      setProgress(0, '准备上传...');
+      try {
+        xhr.send(formData);
+      } catch (err) {
+        finish(new Error('请求无法发出：' + err.message));
+      }
+    }
+
+    function uploadVersion(version, notes, force, zipFile, exeFile) {
+      if (!zipFile && !exeFile) { showToast('请至少选择一个文件（ZIP 或 EXE）'); return false; }
+      if (location.protocol === 'file:') {
+        showToast('本地预览模式（file://）无法上传，请打开在线后台 https://work.jspang.com/admin');
+        return false;
+      }
+
+      const btn = document.getElementById('m-submit');
+      btn.disabled = true;
+      btn.textContent = '上传中...';
+
+      const formData = new FormData();
+      formData.append('version', version);
+      formData.append('release_notes', notes);
+      formData.append('force_update', force);
+      if (zipFile) formData.append('zip_file', zipFile);
+      if (exeFile) formData.append('exe_file', exeFile);
+
+      uploadWithProgress('/admin/api/versions', formData, function (err) {
+        if (err) {
+          showToast('上传失败：' + err.message);
+        } else {
+          setProgress(100, '上传完成', true);
+          showToastOk('版本 v' + version + ' 上传成功！记得点击"设为当前"使其生效');
+          setTimeout(function () { closeModal(); }, 600);
+          loadVersions();
+        }
+        btn.disabled = false;
+        btn.textContent = '上传新版本';
+        setTimeout(hideProgress, 1200);
+      });
+      return false;
+    }
+
+    async function activateVersion(id) {
+      if (!confirm('确认将此版本设为当前生效版本？客户端下次启动将检测到此更新。')) return;
+      try {
+        const resp = await fetch('/admin/api/versions/' + id + '/activate', { method: 'POST' });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        showToastOk('已设为当前生效版本');
+        loadVersions();
+      } catch (e) {
+        showToast('操作失败：' + e.message);
+      }
+    }
+
+    async function deleteVersion(id) {
+      if (!confirm('确认删除此版本？服务器上的升级包也会被删除。')) return;
+      try {
+        const resp = await fetch('/admin/api/versions/' + id, { method: 'DELETE' });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || ('HTTP ' + resp.status));
+        }
+        showToastOk('已删除');
+        loadVersions();
+      } catch (e) {
+        showToast('删除失败：' + e.message);
+      }
+    }
+
+
+    // ========== 微信小程序版本管理 ==========
+    async function loadMpVersions() {
+      try {
+        const resp = await fetch('/admin/api/versions/miniprogram', { headers: { 'Accept': 'application/json' } });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        const tbody = document.getElementById('mp-rows');
+        if (!data.versions.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty">暂无版本，登记第一版小程序吧</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.versions.map(v => `
+          <tr>
+            <td><strong>v${escapeHtml(v.version)}</strong></td>
+            <td>${v.is_active ? '<span class="badge active">当前生效</span>' : '<span class="badge inactive">未生效</span>'}</td>
+            <td>${v.created_at}</td>
+            <td><button type="button" class="btn-sm" data-notes="${escapeHtml(v.release_notes)}" onclick="showNotes('小程序版', 'v${escapeHtml(v.version)}', '${v.created_at}', this.getAttribute('data-notes'))">详情</button></td>
+            <td>
+              ${v.is_active
+                ? '<button class="btn-sm" disabled>当前版本</button>'
+                : `<button class="btn-sm primary" onclick="activateMpVersion(${v.id})">设为当前</button>`}
+              <button class="btn-sm danger" onclick="deleteMpVersion(${v.id})">删除</button>
+            </td>
+          </tr>`).join('');
+        document.getElementById('tabMpCnt').textContent = data.versions.length;
+      } catch (e) {
+        showToast('加载小程序版本列表失败：' + e.message);
+      }
+    }
+
+    async function uploadMpVersion(version, notes) {
+      const btn = document.getElementById('m-submit');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+      try {
+        const fd = new FormData();
+        fd.append('version', version);
+        fd.append('release_notes', notes);
+        const resp = await fetch('/admin/api/versions/miniprogram', { method: 'POST', body: fd });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return false; }
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || ('HTTP ' + resp.status));
+        }
+        const data = await resp.json().catch(() => ({}));
+        showToastOk(data.replaced ? ('v' + version + ' 已存在，更新说明已替换') : ('小程序版本 v' + version + ' 登记成功！记得点击"设为当前"使其生效'));
+        closeModal();
+        loadMpVersions();
+      } catch (e) {
+        showToast('保存失败：' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '保存新版本';
+      }
+      return false;
+    }
+
+    async function activateMpVersion(id) {
+      if (!confirm('确认将此版本设为当前生效版本？官网小程序日志与数据带将立即联动更新。')) return;
+      try {
+        const resp = await fetch('/admin/api/versions/miniprogram/' + id + '/activate', { method: 'POST' });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        showToastOk('已设为当前生效版本');
+        loadMpVersions();
+      } catch (e) {
+        showToast('操作失败：' + e.message);
+      }
+    }
+
+    async function deleteMpVersion(id) {
+      if (!confirm('确认删除此小程序版本记录？')) return;
+      try {
+        const resp = await fetch('/admin/api/versions/miniprogram/' + id, { method: 'DELETE' });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || ('HTTP ' + resp.status));
+        }
+        showToastOk('已删除');
+        loadMpVersions();
+      } catch (e) {
+        showToast('删除失败：' + e.message);
+      }
+    }
+
+    // ========== 官网设置：入群二维码 + 作者微信二维码 ==========
+    async function loadQrcode() {
+      try {
+        const resp = await fetch('/api/site/qrcode', { headers: { 'Accept': 'application/json' } });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        const ph = document.getElementById('qr-ph');
+        const tm = document.getElementById('qr-time');
+        if (ph) ph.innerHTML = data.url
+          ? '<img src="' + data.url + '" style="width:100%;height:100%;object-fit:contain;border-radius:10px" alt="入群二维码">'
+          : '二维码预览';
+        if (tm) tm.textContent = data.url ? ('上次更新：' + (data.updated_at || '-')) : '尚未设置';
+      } catch (e) {
+        showToast('加载二维码失败：' + e.message);
+      }
+    }
+
+    async function loadAuthorQrcode() {
+      try {
+        const resp = await fetch('/api/site/qrcode/author', { headers: { 'Accept': 'application/json' } });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        const inp = document.getElementById('author-account-input');
+        if (inp && data.account) inp.value = data.account;
+        const ph = document.getElementById('aqr-ph');
+        const tm = document.getElementById('aqr-time');
+        if (ph) ph.innerHTML = data.url
+          ? '<img src="' + data.url + '" style="width:100%;height:100%;object-fit:contain;border-radius:10px" alt="作者微信二维码">'
+          : '二维码预览';
+        if (tm) tm.textContent = data.url ? ('上次更新：' + (data.updated_at || '-')) : '尚未设置';
+      } catch (e) {
+        showToast('加载作者二维码失败：' + e.message);
+      }
+    }
+
+    async function uploadAuthorQrcode(file) {
+      if (!file) { showToast('请选择二维码图片'); return; }
+
+      const btn = document.getElementById('aqr-upload-btn');
+      btn.disabled = true;
+      btn.textContent = '上传中...';
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const resp = await fetch('/admin/api/site/qrcode/author', { method: 'POST', body: formData });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || ('HTTP ' + resp.status));
+        }
+        showToastOk('作者二维码已更新，官网立即生效');
+        document.getElementById('aqr-file').value = '';
+        loadAuthorQrcode();
+      } catch (err) {
+        showToast('上传失败：' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '上传二维码';
+      }
+    }
+
+    async function clearAuthorQrcode() {
+      if (!confirm('确认清除作者微信二维码？官网将恢复占位图。')) return;
+      try {
+        const resp = await fetch('/admin/api/site/qrcode/author', { method: 'DELETE' });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        showToastOk('已清除');
+        loadAuthorQrcode();
+      } catch (e) {
+        showToast('操作失败：' + e.message);
+      }
+    }
+
+    async function saveAuthorAccount() {
+      const inp = document.getElementById('author-account-input');
+      const account = inp.value.trim();
+      if (!account) { showToast('请输入微信号'); return; }
+      const btn = document.getElementById('author-account-btn');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+      try {
+        const fd = new FormData();
+        fd.append('account', account);
+        const resp = await fetch('/admin/api/site/author-account', { method: 'POST', body: fd });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || ('HTTP ' + resp.status));
+        }
+        showToastOk('微信号已保存，官网立即生效');
+      } catch (err) {
+        showToast('保存失败：' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '保存账号';
+      }
+    }
+
+    function showAlertModal(title, msg) {
+      document.getElementById('alertTitle').textContent = title;
+      document.getElementById('alertMsg').textContent = msg;
+      document.getElementById('alertModal').style.display = 'flex';
+    }
+
+    function closeAlert() {
+      document.getElementById('alertModal').style.display = 'none';
+    }
+
+    function showNotes(platform, version, created, notes) {
+      document.getElementById('notesTitle').textContent = platform + ' · ' + version + ' 更新说明';
+      document.getElementById('notesMeta').textContent = '上传时间：' + (created || '-');
+      const body = document.getElementById('notesBody');
+      body.textContent = (notes && notes.trim()) ? notes : '（暂无更新说明）';
+      document.getElementById('notesModal').style.display = 'flex';
+    }
+
+    function closeNotes() {
+      document.getElementById('notesModal').style.display = 'none';
+    }
+
+    async function uploadQrcode(file) {
+      if (!file) { showToast('请选择二维码图片'); return; }
+
+      const btn = document.getElementById('qr-upload-btn');
+      btn.disabled = true;
+      btn.textContent = '上传中...';
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const resp = await fetch('/admin/api/site/qrcode', { method: 'POST', body: formData });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || ('HTTP ' + resp.status));
+        }
+        showToastOk('二维码已更新，官网立即生效');
+        document.getElementById('qr-file').value = '';
+        loadQrcode();
+      } catch (err) {
+        showToast('上传失败：' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '上传二维码';
+      }
+    }
+
+    async function clearQrcode() {
+      if (!confirm('确认清除入群二维码？官网将恢复为占位图。')) return;
+      try {
+        const resp = await fetch('/admin/api/site/qrcode', { method: 'DELETE' });
+        if (resp.status === 401) { window.location.href = '/admin/login'; return; }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        showToastOk('已清除二维码');
+        loadQrcode();
+      } catch (e) {
+        showToast('清除失败：' + e.message);
+      }
+    }
+
+    loadVersions();
+    loadMpVersions();
+    loadQrcode();
+  </script>
+</body>
+</html>

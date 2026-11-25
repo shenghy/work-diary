@@ -1,0 +1,97 @@
+# 打包/安装产物不入库（仅保留在本地用于发布）
+*.exe
+*.zip
+*.apk
+*.msi
+*.7z
+*.rar
+*.dmg
+
+# 调试截图与临时文件
+_*.png
+_shots/
+*_shot*.png
+_build_err.txt
+*.log
+
+# 备份文件
+*.bak
+*.bak*
+
+# 敏感配置（真实密钥不入库）
+.env
+
+# Flutter / Android 构建缓存
+build/
+.dart_tool/
+.gradle/
+*.iml
+
+# 服务器备份与临时目录
+work_diary_server/app/static/_backup/
+work_diary_server/app/static/_shots/
+work_diary_server/app/_shots/
+win-screenshot.png
+
+# 临时脚本与调试产物目录
+官网素材/
+
+# ── 依赖与构建缓存（不入库） ──
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+dist/
+
+# ── 设计评审/演示临时目录 ──
+.hallmark/
+.motiongit-demo/
+.motiongit-tools/
+.reviewcrops/
+
+# ── 测试失败产物 ──
+work_diary_app/test/failures/
+
+# ── 附件中转联调夹具（含一次性 bearer token，由 dart_relay_fixture.py 现场生成）──
+work_diary_app/test/fixtures/attachment_relay.json
+
+# ── 含明文数据库口令的临时排查脚本 ──
+check_memos_db.py
+
+# ── 编辑器 ──
+.idea/
+# ── 密钥扫描本地清单（含真实凭据字面量，绝不入库） ──
+tools/check_secrets.local.txt
+
+# ── 仅本地保留（公开仓 public 分支不含；master 已跟踪的不受影响） ──
+/MySql.md
+/Plan.md
+/newPlan.md
+/upyun.md
+/create_tables.py
+/setup_remote_db.py
+/init_remote_db.sql
+/email_server.py
+/服务架构图.html
+/服务架构图.png
+/项目架构总览.html
+/bubble_styles.html
+/new_dialog_styles.html
+/theme_switch_mockup.html
+/字体预览.html
+/后台版本管理版面方案.html
+/官网Hero版面方案.html
+/官网玻璃主题设计稿.html
+/附件拟物样式方案.html
+/官网改版方案.md
+/bat_test_err.txt
+/bat_test_output.txt
+/plan/
+/docs/
+/work_diary_app_android/
+/图标方案/
+/备忘卡片设计方案/
+/备忘界面方案/
+/新建弹窗设计方案/
+/过期印章设计方案/
+/宣传配图/

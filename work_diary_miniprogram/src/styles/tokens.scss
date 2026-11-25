@@ -1,0 +1,251 @@
+/* 设计 Token：对应桌面端 GlassPalette light/dark 两档 */
+page {
+  --bg-page: #eef2fb;
+  --bg-page-deep: #e2e9f7;
+  --surface: #ffffff;
+  /* 玻璃卡面：压白底 + 斜向染色，对齐 GlassPalette light（shade 190 + tint 210→150） */
+  --card-bg: radial-gradient(130% 95% at 10% -28%, var(--glass-corner), transparent 62%),
+    linear-gradient(118deg, var(--glass-diag) 0%, transparent 42%, transparent 74%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(234, 240, 251, 0.6)),
+    rgba(255, 255, 255, 0.76);
+  --card-bg-strong: #ffffff;
+  --card-border: rgba(150, 166, 196, 0.42);
+  --card-edge: rgba(255, 255, 255, 0.72);
+  --chip-bg: rgba(255, 255, 255, 0.7);
+  --chip-border: rgba(150, 166, 196, 0.4);
+  /* 标签胶囊：顶部受光 + 语义淡染 + 贴地软影，对齐桌面 _TimeTag 的三段渐变 */
+  --tag-gloss: rgba(255, 255, 255, 0.62);
+  --tag-shadow: 0 2rpx 8rpx rgba(23, 43, 84, 0.1);
+  --field-bg: rgba(255, 255, 255, 0.82);
+  --field-border: rgba(150, 166, 196, 0.5);
+  --track-bg: rgba(120, 145, 190, 0.2);
+  /* 备忘代码块底色：浅灰，与卡面区分但不抢眼 */
+  --code-bg: rgba(120, 145, 190, 0.16);
+  /* 附件纸片：对齐桌面端 _Sheet——白纸 + 冷灰描边 + 略深折角 */
+  --att-paper: #ffffff;
+  --att-paper-edge: rgba(150, 166, 196, 0.75);
+  --att-fold: rgba(150, 166, 196, 0.3);
+  --att-overlay-bg: #ffffff;
+
+  --text-primary: #14213d;
+  --text-secondary: rgba(20, 33, 61, 0.76);
+  --text-tertiary: rgba(20, 33, 61, 0.55);
+  --text-inverse: #ffffff;
+
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --accent-border: rgba(37, 99, 235, 0.3);
+  --danger: #dc4b5c;
+  --danger-bg: rgba(220, 75, 92, 0.09);
+  --danger-border: rgba(220, 75, 92, 0.35);
+
+  --status-planned: #5b6b84;
+  --status-executing: #2563eb;
+  --status-completed: #0e9f6e;
+  --status-executing-bg: rgba(37, 99, 235, 0.1);
+
+  --urgency-normal: #0e9f6e;
+  --urgency-urgent: #c2711b;
+  --urgency-important: #c43a55;
+  --urgency-normal-bg: rgba(14, 159, 110, 0.1);
+  --urgency-urgent-bg: rgba(194, 113, 27, 0.12);
+  --urgency-important-bg: rgba(196, 58, 85, 0.1);
+  /* 色条渐变尾色 / 标签描边：同色 32%，让紧急色只出现在细节里 */
+  --urgency-normal-line: rgba(14, 159, 110, 0.32);
+  --urgency-urgent-line: rgba(194, 113, 27, 0.32);
+  --urgency-important-line: rgba(196, 58, 85, 0.32);
+
+  --type-personal: #0e9f6e;
+  --type-personal-bg: rgba(14, 159, 110, 0.1);
+  --type-personal-line: rgba(14, 159, 110, 0.32);
+  --type-work: #2563eb;
+  --type-work-bg: rgba(37, 99, 235, 0.1);
+  --type-work-line: rgba(37, 99, 235, 0.32);
+
+  --date-start: #12a88e;
+  --date-done: #e44b6e;
+  --date-start-bg: rgba(18, 168, 142, 0.1);
+  --date-start-line: rgba(18, 168, 142, 0.32);
+  --date-done-bg: rgba(228, 75, 110, 0.1);
+  --date-done-line: rgba(228, 75, 110, 0.32);
+
+  --stats-primary: #5b4be0;
+  --stats-primary-soft: #7b6cff;
+  --stats-teal: #12a88e;
+  --stats-teal-strong: #0d8f79;
+  --stats-amber: #e08a2e;
+  --stats-pink: #e44b6e;
+  --stats-blue: #2f6fe0;
+  --stats-grid: rgba(120, 145, 190, 0.22);
+  --stats-axis: rgba(120, 145, 190, 0.45);
+  --stats-band: rgba(120, 145, 190, 0.1);
+
+  --memo-paper: radial-gradient(130% 95% at 10% -30%, var(--glass-corner), transparent 60%),
+    linear-gradient(135deg, rgba(244, 247, 255, 0.9), rgba(223, 230, 255, 0.82));
+  /* 玻璃边光：顶部 1px 高光 + 底部 1px 收暗 + 贴地影 + 蓝紫环境光 */
+  --shadow-card: inset 0 1rpx 0 rgba(255, 255, 255, 0.96),
+    inset 0 -1rpx 0 rgba(120, 138, 170, 0.3), 0 10rpx 30rpx rgba(23, 43, 84, 0.12),
+    0 2rpx 8rpx rgba(23, 43, 84, 0.06), 0 16rpx 44rpx rgba(37, 99, 235, 0.1);
+  --shadow-soft: inset 0 1rpx 0 rgba(255, 255, 255, 0.8),
+    0 2rpx 10rpx rgba(23, 43, 84, 0.07);
+
+  /* 极光底板：六团色 + 高光点，取 GlassPalette.light 的 alpha */
+  --aurora-1: rgba(99, 102, 232, 0.42);
+  --aurora-2: rgba(147, 166, 249, 0.4);
+  --aurora-3: rgba(96, 194, 250, 0.36);
+  --aurora-4: rgba(164, 92, 248, 0.3);
+  --aurora-5: rgba(240, 139, 252, 0.26);
+  --aurora-6: rgba(45, 212, 191, 0.3);
+  --aurora-7: rgba(255, 255, 255, 0.55);
+  --aurora-scrim: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.2) 55%,
+    rgba(255, 255, 255, 0.34)
+  );
+
+  /* 玻璃材质细节：伪元素边光与反光 */
+  --glass-topline: rgba(255, 255, 255, 0.96);
+  --glass-bottomline: rgba(120, 138, 170, 0.3);
+  --glass-corner: rgba(255, 255, 255, 0.6);
+  --glass-diag: rgba(255, 255, 255, 0.4);
+  --glass-sheen: rgba(233, 241, 255, 0.55);
+  --float-bg: rgba(255, 255, 255, 0.58);
+  --float-border: rgba(150, 166, 196, 0.38);
+}
+
+.theme-dark {
+  --bg-page: #101b36;
+  --bg-page-deep: #18264d;
+  --surface: #16213f;
+  /* 玻璃卡面：压黑把卡片按进背景 + 彩色提亮，对齐 GlassPalette dark（shade 72 + tint 16→8） */
+  --card-bg: radial-gradient(130% 95% at 10% -28%, var(--glass-corner), transparent 62%),
+    linear-gradient(118deg, var(--glass-diag) 0%, transparent 42%, transparent 74%),
+    linear-gradient(135deg, rgba(124, 140, 255, 0.075), rgba(91, 63, 224, 0.035)),
+    rgba(0, 0, 0, 0.3);
+  --card-bg-strong: #1a2748;
+  --card-border: rgba(255, 255, 255, 0.26);
+  --card-edge: rgba(255, 255, 255, 0.4);
+  --chip-bg: rgba(255, 255, 255, 0.1);
+  --chip-border: rgba(255, 255, 255, 0.18);
+  --tag-gloss: rgba(255, 255, 255, 0.16);
+  --tag-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
+  --field-bg: rgba(255, 255, 255, 0.08);
+  --field-border: rgba(255, 255, 255, 0.2);
+  --track-bg: rgba(255, 255, 255, 0.12);
+  --code-bg: rgba(255, 255, 255, 0.08);
+  /* 附件纸片：深色档纸面压暗一档，描边和角标底色对齐桌面端 _Sheet */
+  --att-paper: #e9eef7;
+  --att-paper-edge: rgba(150, 166, 196, 0.55);
+  --att-fold: rgba(150, 166, 196, 0.45);
+  --att-overlay-bg: #1b2338;
+
+  --text-primary: #f3f6fc;
+  --text-secondary: rgba(243, 246, 252, 0.76);
+  --text-tertiary: rgba(243, 246, 252, 0.55);
+  --text-inverse: #101b36;
+
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.2);
+  --accent-border: rgba(59, 130, 246, 0.35);
+  --danger: #ff6b8a;
+  --danger-bg: rgba(255, 107, 138, 0.12);
+  --danger-border: rgba(255, 107, 138, 0.4);
+
+  --status-planned: #a9b7cf;
+  --status-executing: #5aa9ff;
+  --status-completed: #4be0c8;
+  --status-executing-bg: rgba(90, 169, 255, 0.15);
+
+  --urgency-normal: #4be0c8;
+  --urgency-urgent: #ffb45c;
+  --urgency-important: #ff6b8a;
+  --urgency-normal-bg: rgba(75, 224, 200, 0.14);
+  --urgency-urgent-bg: rgba(255, 180, 92, 0.14);
+  --urgency-important-bg: rgba(255, 107, 138, 0.14);
+  --urgency-normal-line: rgba(75, 224, 200, 0.32);
+  --urgency-urgent-line: rgba(255, 180, 92, 0.32);
+  --urgency-important-line: rgba(255, 107, 138, 0.32);
+
+  --type-personal: #4be0c8;
+  --type-personal-bg: rgba(75, 224, 200, 0.14);
+  --type-personal-line: rgba(75, 224, 200, 0.32);
+  --type-work: #5aa9ff;
+  --type-work-bg: rgba(90, 169, 255, 0.16);
+  --type-work-line: rgba(90, 169, 255, 0.32);
+
+  --date-start: #4be0c8;
+  --date-done: #ff6b8a;
+  --date-start-bg: rgba(75, 224, 200, 0.14);
+  --date-start-line: rgba(75, 224, 200, 0.32);
+  --date-done-bg: rgba(255, 107, 138, 0.14);
+  --date-done-line: rgba(255, 107, 138, 0.32);
+
+  --stats-primary: #7b6cff;
+  --stats-primary-soft: #a99cff;
+  --stats-teal: #4be0c8;
+  --stats-teal-strong: #7bf0dd;
+  --stats-amber: #ffb45c;
+  --stats-pink: #ff6b8a;
+  --stats-blue: #5aa9ff;
+  --stats-grid: rgba(255, 255, 255, 0.12);
+  --stats-axis: rgba(255, 255, 255, 0.26);
+  --stats-band: rgba(255, 255, 255, 0.06);
+
+  --memo-paper: radial-gradient(130% 95% at 10% -30%, var(--glass-corner), transparent 60%),
+    linear-gradient(135deg, rgba(157, 180, 255, 0.2), rgba(124, 107, 255, 0.08));
+  --shadow-card: inset 0 1rpx 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1rpx 0 rgba(0, 0, 0, 0.35), 0 10rpx 30rpx rgba(0, 0, 0, 0.45),
+    0 2rpx 8rpx rgba(0, 0, 0, 0.3), 0 16rpx 44rpx rgba(59, 130, 246, 0.22);
+  --shadow-soft: inset 0 1rpx 0 rgba(255, 255, 255, 0.5),
+    0 2rpx 10rpx rgba(0, 0, 0, 0.28);
+
+  --aurora-1: rgba(79, 70, 229, 0.4);
+  --aurora-2: rgba(129, 140, 248, 0.35);
+  --aurora-3: rgba(56, 189, 248, 0.3);
+  --aurora-4: rgba(168, 85, 247, 0.4);
+  --aurora-5: rgba(232, 121, 249, 0.19);
+  --aurora-6: rgba(45, 212, 191, 0.25);
+  --aurora-7: rgba(219, 234, 254, 0.08);
+  --aurora-scrim: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(10, 10, 30, 0.08) 55%,
+    rgba(0, 0, 0, 0.15)
+  );
+
+  --glass-topline: rgba(255, 255, 255, 0.8);
+  --glass-bottomline: rgba(0, 0, 0, 0.35);
+  --glass-corner: rgba(255, 255, 255, 0.16);
+  --glass-diag: rgba(255, 255, 255, 0.1);
+  --glass-sheen: rgba(255, 255, 255, 0.28);
+  --float-bg: rgba(255, 255, 255, 0.08);
+  --float-border: rgba(255, 255, 255, 0.2);
+}
+
+/* 通用玻璃卡：染色 + 边光。模糊只发生在背景层，卡片不逐张 backdrop-filter */
+.glass {
+  position: relative;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1rpx solid var(--card-border);
+  box-shadow: var(--shadow-card);
+}
+/* 浮控件：半透明 + 可选背景模糊，支持时更好看，不支持也不影响可读性 */
+.glass-float {
+  background: var(--float-bg);
+  border: 1rpx solid var(--float-border);
+  -webkit-backdrop-filter: blur(20rpx);
+  backdrop-filter: blur(20rpx);
+  box-shadow: inset 0 1rpx 0 var(--glass-topline), 0 6rpx 20rpx rgba(23, 43, 84, 0.08);
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.muted {
+  color: var(--text-tertiary);
+}

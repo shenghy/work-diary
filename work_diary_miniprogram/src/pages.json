@@ -1,0 +1,98 @@
+{
+	"pages": [
+		{
+			"path": "pages/tasks/tasks",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "极简工作日记"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录"
+			}
+		}
+	],
+	"subPackages": [
+		{
+			"root": "pkgEdit",
+			"pages": [
+				{
+					"path": "task-edit/task-edit",
+					"style": {
+						"navigationBarTitleText": "任务"
+					}
+				},
+				{
+					"path": "memo-edit/memo-edit",
+					"style": {
+						"navigationBarTitleText": "备忘"
+					}
+				}
+			]
+		},
+		{
+			"root": "pkgData",
+			"pages": [
+				{
+					"path": "stats/stats",
+					"style": {
+						"navigationBarTitleText": "我的数据"
+					}
+				},
+				{
+					"path": "attachment-view/attachment-view",
+					"style": {
+						"navigationBarTitleText": "附件"
+					}
+				}
+			]
+		},
+		{
+			"root": "pkgMine",
+			"pages": [
+				{
+					"path": "mine/mine",
+					"style": {
+						"navigationBarTitleText": "我的"
+					}
+				},
+				{
+					"path": "settings/settings",
+					"style": {
+						"navigationBarTitleText": "设置"
+					}
+				},
+				{
+					"path": "about/about",
+					"style": {
+						"navigationBarTitleText": "关于"
+					}
+				},
+				{
+					"path": "repeat-manager/repeat-manager",
+					"style": {
+						"navigationBarTitleText": "循环任务"
+					}
+				}
+			]
+		}
+	],
+	"preloadRule": {
+		"pages/tasks/tasks": {
+			"network": "all",
+			"packages": ["pkgEdit"]
+		},
+		"pkgMine/mine/mine": {
+			"network": "all",
+			"packages": ["pkgData", "pkgMine"]
+		}
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "极简工作日记",
+		"navigationBarBackgroundColor": "#EEF2FB",
+		"backgroundColor": "#EEF2FB"
+	}
+}
